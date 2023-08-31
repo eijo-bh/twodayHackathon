@@ -14,6 +14,12 @@ def _submit():
 
 def app():
     # Build Streamlit App
+    # Setup azure openai
+    openai.api_type = "azure"
+    openai.api_base = "https://cs-openai-us-jml.openai.azure.com/"
+    openai.api_version = "2023-05-15"
+    openai.api_key = "ff9de7d753b5443b9846bfb3de8e6edb"
+
     st.image("twoday kapacity logo.png")
     st.title("Kapacity LLM Hackathon")
     f = 1536
@@ -46,7 +52,7 @@ def app():
             embedding = openai.Embedding.create(input=st.session_state['question'],
                                                 engine='text-embedding-ada-002')['data'][0]['embedding']
             embedding = np.array(embedding, dtype=EMBEDDING_DTYPE)
-            vectors = u.get_nns_by_vector(embedding, 100, search_k=-1, include_distances=True)
+            vectors = u.get_nns_by_vector(embedding, 120, search_k=-1, include_distances=True)
             texts = [text_dict[str(i)] for i in vectors[0]]
             selected_conversation_hist = [
                 {"role": "system",
@@ -55,6 +61,12 @@ def app():
                      You are answering questions to the best of your ability. 
                      You are not trying to be funny or clever. You are trying to be helpful. 
                      You are not trying to show off.
+                     You will be answering questions specifically about the Danish queens new years speeches. 
+                     You will be asked for themes, events within specific years, count of events and what she has talked
+                     about. Please answer as detailed as you can within the context of the question.
+                     If asked about the number of individuals remember to count the names of the individuals mentioned in a specific context.
+                     Have family relations in mind.
+                     If you dont have a specific answer then give the closest answer possible keep the question context in mind.
                      """},
             ]
             modified_question = "Brugeren spurgte: \n" + \
