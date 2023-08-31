@@ -46,7 +46,7 @@ for i in range(2001, 2023):
     answer = raw_answer["choices"][0]["message"]["content"]
     embedding = openai.Embedding.create(input=answer, engine='text-embedding-ada-002')['data'][0]['embedding']
     embedding = np.array(embedding, dtype=EMBEDDING_DTYPE)
-    t.add_item(i, embedding)
+    t.add_item(idx, embedding)
     text_dict[idx] = answer
     idx += 1
     print(i)
