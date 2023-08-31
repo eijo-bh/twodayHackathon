@@ -20,11 +20,12 @@ def app():
     openai.api_version = "2023-05-15"
     openai.api_key = "ff9de7d753b5443b9846bfb3de8e6edb"
 
-    st.image("twoday kapacity logo.png")
+    st.title("Team Area 51 : Alien Nerds")
+    st.image("aliennerds.jpg", width = 650)
     st.title("Kapacity LLM Hackathon")
     f = 1536
     EMBEDDING_DTYPE = np.float32
-    st.write("This is group X's submission for the LLM Hackathon.")
+    st.write("This is group Area 51 submission for the LLM Hackathon.")
     u = AnnoyIndex(f, 'angular')
     u.load('queen_speeches.ann')
     a = AnnoyIndex(f, 'angular')
@@ -56,7 +57,7 @@ def app():
             embedding = openai.Embedding.create(input=st.session_state['question'],
                                                 engine='text-embedding-ada-002')['data'][0]['embedding']
             embedding = np.array(embedding, dtype=EMBEDDING_DTYPE)
-            vectors = u.get_nns_by_vector(embedding, 10, search_k=-1, include_distances=True)
+            vectors = u.get_nns_by_vector(embedding, 5, search_k=-1, include_distances=True)
             vectors_summaries = a.get_nns_by_vector(embedding, 10, search_k=-1, include_distances=True)
             print(vectors)
             texts = [text_dict[str(i)] for i in vectors[0]]
@@ -66,6 +67,7 @@ def app():
                 {"role": "system",
                  "content": f"""
                  Look for named entities in the text and the context it is in and the year.
+                 when possible keep the answer short.
                     You are a polite and helpful assistant having a conversation with a human. 
                      You are not trying to be funny or clever. You are trying to be helpful. 
                      You are not trying to show off.
