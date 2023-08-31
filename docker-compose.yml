@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+   hackathon-twoday-chatbot:
+     image: hackathon-twoday-chatbot
+     build:
+       context: .
+       dockerfile: ./Dockerfile
+     volumes:
+       - .:/app
+     command:
+        ["/bin/bash"]
