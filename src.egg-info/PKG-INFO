@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: src
+Version: 0.0.1
+Summary: Application for hackathon
+Maintainer: thbm@kapacity
+Requires-Python: ==3.10.11
