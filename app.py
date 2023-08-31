@@ -27,8 +27,12 @@ def app():
     st.write("This is group X's submission for the LLM Hackathon.")
     u = AnnoyIndex(f, 'angular')
     u.load('queen_speeches.ann')
+    a = AnnoyIndex(f, 'angular')
+    a.load('queen_speeches_summaries.ann')
     with open('processed_speeches.json') as fp:
         text_dict = json.load(fp)
+    with open('processed_speeches_summaries.json') as fp:
+        text_summaries_dict = json.load(fp)
     if 'question' not in st.session_state:
         st.session_state['question'] = ''
 
@@ -52,13 +56,17 @@ def app():
             embedding = openai.Embedding.create(input=st.session_state['question'],
                                                 engine='text-embedding-ada-002')['data'][0]['embedding']
             embedding = np.array(embedding, dtype=EMBEDDING_DTYPE)
-            vectors = u.get_nns_by_vector(embedding, 120, search_k=-1, include_distances=True)
+            vectors = u.get_nns_by_vector(embedding, 10, search_k=-1, include_distances=True)
+            vectors_summaries = a.get_nns_by_vector(embedding, 10, search_k=-1, include_distances=True)
+            print(vectors)
             texts = [text_dict[str(i)] for i in vectors[0]]
+            summaries = [text_summaries_dict[str(i)] for i in vectors_summaries[0]]
+                     #You are answering questions to the best of your ability. 
             selected_conversation_hist = [
                 {"role": "system",
                  "content": f"""
+                 Look for named entities in the text and the context it is in and the year.
                     You are a polite and helpful assistant having a conversation with a human. 
-                     You are answering questions to the best of your ability. 
                      You are not trying to be funny or clever. You are trying to be helpful. 
                      You are not trying to show off.
                      You will be answering questions specifically about the Danish queens new years speeches. 
@@ -67,12 +75,16 @@ def app():
                      If asked about the number of individuals remember to count the names of the individuals mentioned in a specific context.
                      Have family relations in mind.
                      If you dont have a specific answer then give the closest answer possible keep the question context in mind.
+                     If you asked about context of something the refer back to what events are related to said something.
                      """},
             ]
+            print(texts)
             modified_question = "Brugeren spurgte: \n" + \
                                 st.session_state['question'] + \
                                 '\n Du har nu følgende fra dronningens nytårstaler fra 2001-2022 at svare ud fra: \n' + \
                                 '\n '.join(texts) + \
+                                '\n Og disse følgende tekster fra opsummeringer: \n' + \
+                                '\n '.join(summaries) + \
                                 '\n Besvar spørgsmålet.'
             # Add question to conversation
             messages = selected_conversation_hist + [{"role": "user", "content": modified_question}]
