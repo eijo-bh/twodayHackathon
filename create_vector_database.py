@@ -10,8 +10,11 @@ openai.api_version = "2023-05-15"
 openai.api_key = "ff9de7d753b5443b9846bfb3de8e6edb"
 f = 1536
 t = AnnoyIndex(f, 'angular')
+z = AnnoyIndex(f, 'angular')
 idx = 0
+idx_z = 0
 text_dict = {}
+text_dict_summary = {}
 for i in range(2001, 2023):
     with open(f'/app/queens_speeches/speeches/{i}.txt') as f:
         total_text = f"År {i}"
@@ -44,14 +47,20 @@ for i in range(2001, 2023):
         messages=messages
     )
     answer = raw_answer["choices"][0]["message"]["content"]
-    embedding = openai.Embedding.create(input=answer, engine='text-embedding-ada-002')['data'][0]['embedding']
-    embedding = np.array(embedding, dtype=EMBEDDING_DTYPE)
-    t.add_item(idx, embedding)
-    text_dict[idx] = answer
-    idx += 1
+    for summary_idx, summary_text in enumerate(answer.split('.')):
+        summary_text = f'År: {i}\n Linjenummer: {summary_idx} \n' +  summary_text
+        embedding = openai.Embedding.create(input=summary_text, engine='text-embedding-ada-002')['data'][0]['embedding']
+        embedding = np.array(embedding, dtype=EMBEDDING_DTYPE)
+        z.add_item(idx_z, embedding)
+        text_dict_summary[idx_z] = summary_text
+        idx_z += 1
     print(i)
 t.build(10) # 10 trees
 t.save('queen_speeches.ann')
+z.build(10)
+z.save('queen_speeches_summaries.ann')
 
 with open('processed_speeches.json', 'w') as fp:
     json.dump(text_dict, fp)
+with open('processed_speeches_summaries.json', 'w') as fp:
+    json.dump(text_dict_summary, fp)
